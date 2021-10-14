@@ -17,6 +17,11 @@ public class JTestServerClient extends JServerClient {
     }
 
     @Override
+    public void onNewConnection(@NotNull InetSocketAddress originAddress) {
+
+    }
+
+    @Override
     public void onBeforeClosed() {
     }
 

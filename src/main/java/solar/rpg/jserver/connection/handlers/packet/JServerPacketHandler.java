@@ -70,6 +70,8 @@ public abstract class JServerPacketHandler {
         socketHandler.subscribe(subscriber);
     }
 
+    public abstract void onNewConnection(@NotNull InetSocketAddress originAddress);
+
     public void writePacket(
             @NotNull InetSocketAddress originAddress,
             @NotNull JServerPacket packetToSend) throws IOException {
@@ -143,6 +145,7 @@ public abstract class JServerPacketHandler {
             assert this.subscription == null : "Subscription cannot be set twice";
 
             this.subscription = subscription;
+            onNewConnection(originAddress);
             subscription.request(1);
         }
 

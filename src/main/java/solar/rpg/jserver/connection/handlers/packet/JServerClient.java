@@ -26,4 +26,10 @@ public abstract class JServerClient extends JServerPacketHandler {
             throw e;
         }
     }
+
+    @Override
+    public void onBeforeClosed() {
+        // Clients do not usually need logic for this event, so just override if needed
+    }
+
 }
