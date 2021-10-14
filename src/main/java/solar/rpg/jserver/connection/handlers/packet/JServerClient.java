@@ -22,7 +22,7 @@ public abstract class JServerClient extends JServerPacketHandler {
         try {
             registerSocket(new Socket(hostAddr, port));
         } catch (IOException e) {
-            logger.log(Level.SEVERE, String.format("Unable to open socket to host %s:%s", hostAddr, port), e);
+            logger.log(Level.WARNING, String.format("Unable to open socket to host %s:%s", hostAddr, port), e);
             throw e;
         }
     }
