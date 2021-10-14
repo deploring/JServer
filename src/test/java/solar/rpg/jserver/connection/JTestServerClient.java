@@ -30,7 +30,7 @@ public class JTestServerClient extends JServerClient {
     }
 
     @Override
-    public void onPacketReceived(@NotNull JServerPacket packet) {
+    public void onPacketReceived(@NotNull InetSocketAddress originAddress, @NotNull JServerPacket packet) {
         //TODO: Custom packets
     }
 }

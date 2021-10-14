@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -117,7 +118,7 @@ public abstract class JServerPacketHandler {
      *
      * @param packet Custom packet to handle.
      */
-    public abstract void onPacketReceived(@NotNull JServerPacket packet);
+    public abstract void onPacketReceived(@NotNull InetSocketAddress originAddress, @NotNull JServerPacket packet);
 
     private final class JServerPacketSubscriber implements Subscriber<JServerPacket> {
 
@@ -157,7 +158,7 @@ public abstract class JServerPacketHandler {
 
             logger.log(Level.FINEST, String.format("(%s) Received packet from %s", contextType, originAddress));
 
-            onPacketReceived(packet);
+            onPacketReceived(originAddress, packet);
 
             if (!wantToClose.get()) subscription.request(1);
         }
