@@ -49,8 +49,8 @@ public abstract class JServerClient extends JServerPacketHandler {
         return hostAddr;
     }
 
-    public void writePacket(@NotNull JServerPacket packetToSend) throws IOException {
-        writePacket(getHostAddr(), packetToSend);
+    public void writePacket(@NotNull JServerPacket packetToWrite) throws IOException {
+        writePacket(getHostAddr(), packetToWrite);
     }
 
     @Override
