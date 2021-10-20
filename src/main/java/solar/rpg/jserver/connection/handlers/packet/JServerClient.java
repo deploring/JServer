@@ -3,6 +3,7 @@ package solar.rpg.jserver.connection.handlers.packet;
 import org.jetbrains.annotations.NotNull;
 import solar.rpg.jserver.connection.JServerConnectionContextType;
 import solar.rpg.jserver.packet.JServerPacket;
+import solar.rpg.jserver.packet.JServerPacketHeartbeat;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -27,12 +28,18 @@ public abstract class JServerClient extends JServerPacketHandler {
         this.hostAddr = new InetSocketAddress(hostAddr, port);
     }
 
+    /**
+     * Attempts to connect to the host using the provided details.
+     *
+     * @throws IOException Unable to open a {@code Socket} to the host.
+     */
     public void tryConnect() throws IOException {
         try {
             Socket newSocket = new Socket();
             newSocket.connect(this.hostAddr, (int) TimeUnit.SECONDS.toMillis(5));
             newSocket.setSoTimeout((int) TimeUnit.SECONDS.toMillis(15));
             registerSocket(newSocket);
+            doHeartbeat();
         } catch (IOException e) {
             logger.log(Level.INFO,
                        String.format(
@@ -44,18 +51,38 @@ public abstract class JServerClient extends JServerPacketHandler {
         }
     }
 
+    /**
+     * Periodically sends heartbeat packets so the {@code Socket} does not time out.
+     */
+    private void doHeartbeat() {
+        executor.submit(() -> {
+            writePacket(new JServerPacketHeartbeat());
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException ignored) {
+            }
+            if (!isClosed())
+                doHeartbeat();
+        });
+    }
+
     @NotNull
     public InetSocketAddress getHostAddr() {
         return hostAddr;
     }
 
+    /**
+     * Clients are not usually connected to more than one host.
+     * This shortcut method writes packets to the host address.
+     *
+     * @param packetToWrite Packet to write to the host.
+     */
     public void writePacket(@NotNull JServerPacket packetToWrite) {
         writePacket(getHostAddr(), packetToWrite);
     }
 
     @Override
     public void onBeforeClosed() {
-        // Clients do not usually need logic for this event, so just override if needed
+        // This does not need to be used by all client implementations. Override if needed.
     }
-
 }

@@ -5,20 +5,24 @@ import org.jetbrains.annotations.Nullable;
 import solar.rpg.jserver.connection.JServerConnectionContextType;
 import solar.rpg.jserver.connection.handlers.socket.JServerSocketHandler;
 import solar.rpg.jserver.packet.JServerPacket;
+import solar.rpg.jserver.packet.JServerPacketHeartbeat;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * A {@code JServerPacketHandler} is a {@code Consumer} of {@link JServerPacket} objects. When packets are accepted,
@@ -35,7 +39,7 @@ public abstract class JServerPacketHandler {
     @NotNull
     protected final JServerConnectionContextType contextType;
     @NotNull
-    private final ExecutorService executor;
+    protected final ExecutorService executor;
     @NotNull
     private final Map<InetSocketAddress, SimpleImmutableEntry<JServerSocketHandler, JServerPacketSubscriber>> socketHandlerSubscriberMap;
     @NotNull
@@ -72,11 +76,26 @@ public abstract class JServerPacketHandler {
 
     public abstract void onNewConnection(@NotNull InetSocketAddress originAddress);
 
+    public void writePacketAll(@NotNull JServerPacket packetToSend) {
+        socketHandlerSubscriberMap.keySet().forEach(connection -> writePacket(connection, packetToSend));
+    }
+
+    public void writePacketAllExcept(@NotNull JServerPacket packetToSend, InetSocketAddress... addressesToExclude) {
+        List<InetSocketAddress> excludedAddressesList = List.of(addressesToExclude);
+        socketHandlerSubscriberMap.keySet().stream()
+                .filter(originAddress -> !excludedAddressesList.contains(originAddress))
+                .forEach(originAddress -> writePacket(originAddress, packetToSend));
+    }
+
     public void writePacket(@NotNull InetSocketAddress originAddress, @NotNull JServerPacket packetToSend) {
         if (!socketHandlerSubscriberMap.containsKey(originAddress))
             throw new IllegalArgumentException("Unknown connection");
 
         socketHandlerSubscriberMap.get(originAddress).getKey().writePacket(packetToSend);
+    }
+
+    public boolean isClosed() {
+        return closed.get();
     }
 
     public void close() {
@@ -155,7 +174,8 @@ public abstract class JServerPacketHandler {
 
             logger.log(Level.FINEST, String.format("(%s) Received packet from %s", contextType, originAddress));
 
-            onPacketReceived(packet);
+            if (!(packet instanceof JServerPacketHeartbeat))
+                onPacketReceived(packet);
 
             if (!wantToClose.get()) subscription.request(1);
         }

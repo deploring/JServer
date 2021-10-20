@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import solar.rpg.jserver.JServerThread;
 import solar.rpg.jserver.connection.JServerConnectionContextType;
 import solar.rpg.jserver.connection.handlers.socket.JServerSocketHandler;
+import solar.rpg.jserver.packet.JServerPacketHeartbeat;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,6 +57,7 @@ public abstract class JServerHost extends JServerPacketHandler {
 
         acceptClientThread = new JServerAcceptClientThread(logger);
         acceptClientThread.start();
+        doHeartbeat();
     }
 
     /**
@@ -70,6 +73,21 @@ public abstract class JServerHost extends JServerPacketHandler {
         } catch (IOException e) {
             logger.log(Level.WARNING, "Unable to close server socket", e);
         }
+    }
+
+    /**
+     * Periodically sends heartbeat packets so the {@code Socket} does not time out.
+     */
+    private void doHeartbeat() {
+        executor.submit(() -> {
+            writePacketAll(new JServerPacketHeartbeat());
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException ignored) {
+            }
+            if (!isClosed())
+                doHeartbeat();
+        });
     }
 
     /**

@@ -96,14 +96,17 @@ public final class JServerSocketHandler implements Publisher<JServerPacket> {
         assert !socket.isClosed() : "Socket is closed";
         assert subscription != null : "Subscription is not set";
 
-        logger.log(Level.FINEST, String.format("(%s) Writing packet to %s", contextType, socket.getInetAddress()));
+        logger.log(Level.FINEST,
+                   String.format("(%s) Writing packet to %s", contextType, socket.getRemoteSocketAddress()));
 
         try {
             outputStream.writeObject(packet);
         } catch (SocketException e) {
             logger.log(Level.INFO,
                        String.format(
-                               "(%s) Socket error while writing packet to %s", contextType, socket.getInetAddress()),
+                               "(%s) Socket error while writing packet to %s",
+                               contextType,
+                               socket.getRemoteSocketAddress()),
                        e);
             subscription.cancel();
         } catch (IOException e) {
