@@ -30,8 +30,6 @@ public abstract class JServerHost extends JServerPacketHandler {
     private final ServerSocket serverSocket;
     @NotNull
     private final JServerAcceptClientThread acceptClientThread;
-    @NotNull
-    private final List<JServerSocketHandler> clientList;
 
     /**
      * Constructs a {@code JServerHost}.
@@ -57,7 +55,6 @@ public abstract class JServerHost extends JServerPacketHandler {
 
         acceptClientThread = new JServerAcceptClientThread(logger);
         acceptClientThread.start();
-        clientList = Collections.synchronizedList(new ArrayList<>());
     }
 
     /**

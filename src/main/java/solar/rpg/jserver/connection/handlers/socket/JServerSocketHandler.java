@@ -92,7 +92,7 @@ public final class JServerSocketHandler implements Publisher<JServerPacket> {
      * @param packet Packet to send to the other side of the {@code Socket} connection.
      * @throws IOException Exception thrown by the underlying {@link ObjectOutputStream}.
      */
-    public void writePacket(@NotNull JServerPacket packet) throws IOException {
+    public void writePacket(@NotNull JServerPacket packet) {
         assert !socket.isClosed() : "Socket is closed";
         assert subscription != null : "Subscription is not set";
 
@@ -108,7 +108,7 @@ public final class JServerSocketHandler implements Publisher<JServerPacket> {
             subscription.cancel();
         } catch (IOException e) {
             logger.log(Level.INFO, String.format("(%s) Error writing packet", contextType), e);
-            throw e;
+            subscription.cancel();
         }
     }
 

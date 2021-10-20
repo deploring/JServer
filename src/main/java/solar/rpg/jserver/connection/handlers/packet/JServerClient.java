@@ -49,7 +49,7 @@ public abstract class JServerClient extends JServerPacketHandler {
         return hostAddr;
     }
 
-    public void writePacket(@NotNull JServerPacket packetToWrite) throws IOException {
+    public void writePacket(@NotNull JServerPacket packetToWrite) {
         writePacket(getHostAddr(), packetToWrite);
     }
 

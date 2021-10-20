@@ -28,7 +28,7 @@ public class JTestServerHost extends JServerHost {
     }
 
     @Override
-    public void onPacketReceived(@NotNull InetSocketAddress originAddress, @NotNull JServerPacket packet) {
+    public void onPacketReceived(@NotNull JServerPacket packet) {
         //TODO: Custom packets
     }
 }

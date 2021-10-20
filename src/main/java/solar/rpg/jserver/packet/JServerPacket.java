@@ -12,9 +12,6 @@ public abstract class JServerPacket implements Serializable {
     private transient InetSocketAddress originAddress;
 
     public void onReceived(InetSocketAddress originAddress) {
-        if (this.originAddress != null)
-            throw new IllegalStateException("Origin address cannot be set twice");
-
         this.originAddress = originAddress;
     }
 
