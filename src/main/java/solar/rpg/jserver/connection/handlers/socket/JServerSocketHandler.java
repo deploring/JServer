@@ -104,13 +104,13 @@ public final class JServerSocketHandler implements Publisher<JServerPacket> {
         } catch (SocketException e) {
             logger.log(Level.INFO,
                        String.format(
-                               "(%s) Socket error while writing packet to %s",
+                               "(%s) Socket error while writing packet to %s: %s",
                                contextType,
-                               socket.getRemoteSocketAddress()),
-                       e);
+                               socket.getRemoteSocketAddress(),
+                               e.getMessage()));
             subscription.cancel();
         } catch (IOException e) {
-            logger.log(Level.INFO, String.format("(%s) Error writing packet", contextType), e);
+            logger.log(Level.INFO, String.format("(%s) Unexpected error writing packet", contextType), e);
             subscription.cancel();
         }
     }
@@ -172,7 +172,7 @@ public final class JServerSocketHandler implements Publisher<JServerPacket> {
                                              getAddress()));
                     if (!wantToClose.get()) cancel();
                 } catch (ClassNotFoundException e) {
-                    logger.log(Level.INFO, String.format("(%s) Class not found", contextType), e);
+                    logger.log(Level.WARNING, String.format("(%s) Class not found", contextType), e);
                 } catch (IOException e) {
                     logger.log(Level.INFO,
                                String.format("(%s) Error reading packet from %s: %s",

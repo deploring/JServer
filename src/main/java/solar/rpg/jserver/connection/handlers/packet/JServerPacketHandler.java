@@ -18,11 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * A {@code JServerPacketHandler} is a {@code Consumer} of {@link JServerPacket} objects. When packets are accepted,
@@ -113,8 +111,6 @@ public abstract class JServerPacketHandler {
             closeSocket(originAddress);
 
         assert socketHandlerSubscriberMap.size() == 0 : "Expected all connections to be closed";
-
-        //TODO: Probably have some field to stop accepting writes/reads.
     }
 
     public abstract void onBeforeClosed();
@@ -183,16 +179,16 @@ public abstract class JServerPacketHandler {
         @Override
         public void onError(@NotNull Throwable throwable) {
             logger.log(Level.INFO,
-                       String.format("(%s) Error receiving packet from %s",
+                       String.format("(%s) Error receiving packet from %s: %s",
                                      contextType,
-                                     originAddress),
-                       throwable);
+                                     originAddress,
+                                     throwable.getMessage()));
         }
 
         @Override
         public void onComplete() {
-            onSocketClosed(originAddress);
             socketHandlerSubscriberMap.remove(originAddress);
+            onSocketClosed(originAddress);
         }
     }
 }
