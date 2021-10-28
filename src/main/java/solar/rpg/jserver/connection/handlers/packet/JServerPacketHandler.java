@@ -79,6 +79,10 @@ public abstract class JServerPacketHandler {
     }
 
     public void writePacketAllExcept(@NotNull JServerPacket packetToSend, InetSocketAddress... addressesToExclude) {
+        logger.log(Level.FINER,
+                   String.format("(%s) Redistributing packet %s",
+                                 contextType,
+                                 packetToSend.getClass().getSimpleName()));
         List<InetSocketAddress> excludedAddressesList = List.of(addressesToExclude);
         socketHandlerSubscriberMap.keySet().stream()
                 .filter(originAddress -> !excludedAddressesList.contains(originAddress))
@@ -147,7 +151,7 @@ public abstract class JServerPacketHandler {
         }
 
         public void cancel() {
-            assert subscription != null : "Expected subscription to be set";
+            if (subscription == null) throw new IllegalStateException("Subscription is not set");
 
             wantToClose.set(true);
             subscription.cancel();
@@ -155,7 +159,7 @@ public abstract class JServerPacketHandler {
 
         @Override
         public void onSubscribe(@NotNull Subscription subscription) {
-            assert this.subscription == null : "Subscription cannot be set twice";
+            if (this.subscription != null) throw new IllegalStateException("Subscription is already set");
 
             this.subscription = subscription;
             onNewConnection(originAddress);
@@ -164,9 +168,10 @@ public abstract class JServerPacketHandler {
 
         @Override
         public void onNext(@NotNull JServerPacket packet) {
-            assert subscription != null : "Expected subscription to be set";
-            assert packet.getOriginAddress() != null : "Expected origin address to be set";
-            assert originAddress.equals(packet.getOriginAddress()) : "Mismatched origin address?";
+            if (subscription == null) throw new IllegalStateException("Subscription is not set");
+            if (packet.getOriginAddress() == null) throw new IllegalArgumentException("Origin address is not set");
+            if (!originAddress.equals(packet.getOriginAddress()))
+                throw new IllegalArgumentException("Mismatched origin address");
 
             logger.log(Level.FINEST, String.format("(%s) Received packet from %s", contextType, originAddress));
 

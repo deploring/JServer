@@ -185,10 +185,11 @@ public final class JServerSocketHandler implements Publisher<JServerPacket> {
 
         @Override
         public void cancel() {
-            assert !wantToClose.get() : "Socket is already wanting to close";
-            assert !socket.isClosed() : "Socket is already closed";
+            if (wantToClose.get()) throw new IllegalStateException("Socket is already wanting to close");
+            if (socket.isClosed()) throw new IllegalStateException("Socket is already closed");
 
-            logger.log(Level.INFO, String.format("(%s) Closing socket handler for %s", contextType, getAddress()));
+            logger.log(Level.INFO,
+                       String.format("(%s) Closing socket handler for %s", contextType, getAddress()));
             wantToClose.set(true);
 
             try {
