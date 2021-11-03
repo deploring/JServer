@@ -79,10 +79,6 @@ public abstract class JServerPacketHandler {
     }
 
     public void writePacketAllExcept(@NotNull JServerPacket packetToSend, InetSocketAddress... addressesToExclude) {
-        logger.log(Level.FINER,
-                   String.format("(%s) Redistributing packet %s",
-                                 contextType,
-                                 packetToSend.getClass().getSimpleName()));
         List<InetSocketAddress> excludedAddressesList = List.of(addressesToExclude);
         socketHandlerSubscriberMap.keySet().stream()
                 .filter(originAddress -> !excludedAddressesList.contains(originAddress))
