@@ -90,16 +90,18 @@ public final class JServerSocketHandler implements Publisher<JServerPacket> {
      * Writes a {@link JServerPacket} to the other side of the {@code Socket} connection.
      *
      * @param packet Packet to send to the other side of the {@code Socket} connection.
-     * @throws IOException Exception thrown by the underlying {@link ObjectOutputStream}.
+     * @throws IllegalStateException Socket is closed.
+     * @throws IllegalStateException Subscription is not set.
      */
     public void writePacket(@NotNull JServerPacket packet) {
-        assert !socket.isClosed() : "Socket is closed";
-        assert subscription != null : "Subscription is not set";
+        if (socket.isClosed()) throw new IllegalStateException("Socket is closed");
+        if (subscription == null) throw new IllegalStateException("Subscription is not set");
 
         logger.log(Level.FINEST,
                    String.format("(%s) Writing packet to %s", contextType, socket.getRemoteSocketAddress()));
 
         try {
+            outputStream.reset();
             outputStream.writeObject(packet);
         } catch (SocketException e) {
             logger.log(Level.INFO,

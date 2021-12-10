@@ -90,6 +90,11 @@ public abstract class JServerPacketHandler {
             throw new IllegalArgumentException("Unknown connection");
 
         socketHandlerSubscriberMap.get(originAddress).getKey().writePacket(packetToSend);
+        onBeforeWritePacket(originAddress, packetToSend);
+    }
+
+    public void onBeforeWritePacket(@NotNull InetSocketAddress originAddress, @NotNull JServerPacket packetToSend) {
+        // Override if needed for debugging.
     }
 
     public boolean isClosed() {
